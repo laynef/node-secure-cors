@@ -1,4 +1,4 @@
-import { error } from 'util';
+const { error } = require('util');
 
 (function () {
 
