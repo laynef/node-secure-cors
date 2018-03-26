@@ -216,46 +216,46 @@ import { error } from 'util';
         // if options are static (either via defaults or custom options passed in), wrap in a function
         var optionsCallback = null;
         if (typeof o === 'function') {
-        optionsCallback = o;
+            optionsCallback = o;
         } else {
         optionsCallback = function (req, cb) {
             cb(null, o);
         };
-        }
+    }
 
         return function corsMiddleware(req, res, next) {
-        optionsCallback(req, function (err, options) {
-            if (err) {
-            next(err);
-            } else {
-                if (catchWildCard(options.origin) && catchWildCard(req.headers.origin)) {
-                    error(`Don't allow wild cards of any kind in your CORS origins.`);
+            optionsCallback(req, function (err, options) {
+                if (err) {
+                    next(err);
                 } else {
-                    var corsOptions = assign({}, defaults, options);
-                    var originCallback = null;
-                    if (corsOptions.origin && typeof corsOptions.origin === 'function') {
-                        originCallback = corsOptions.origin;
-                    } else if (corsOptions.origin) {
-                            originCallback = function (origin, cb) {
-                            cb(null, corsOptions.origin);
-                        };
-                    }
-
-                    if (originCallback) {
-                        originCallback(req.headers.origin, function (err2, origin) {
-                        if (err2 || !origin) {
-                            next(err2);
-                        } else {
-                            corsOptions.origin = origin;
-                            cors(corsOptions, req, res, next);
-                        }
-                        });
+                    if (catchWildCard(options.origin) && catchWildCard(req.headers.origin)) {
+                        error(`Don't allow wild cards of any kind in your CORS origins.`);
                     } else {
-                        next();
+                        var corsOptions = assign({}, defaults, options);
+                        var originCallback = null;
+                        if (corsOptions.origin && typeof corsOptions.origin === 'function') {
+                            originCallback = corsOptions.origin;
+                        } else if (corsOptions.origin) {
+                                originCallback = function (origin, cb) {
+                                cb(null, corsOptions.origin);
+                            };
+                        }
+
+                        if (originCallback) {
+                            originCallback(req.headers.origin, function (err2, origin) {
+                            if (err2 || !origin) {
+                                next(err2);
+                            } else {
+                                corsOptions.origin = origin;
+                                cors(corsOptions, req, res, next);
+                            }
+                            });
+                        } else {
+                            next();
+                        }
                     }
                 }
-            }
-        });
+            });
         };
     }
 
