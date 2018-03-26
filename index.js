@@ -22,13 +22,16 @@ const { error } = require('util');
                     return true;
                 }
             }
-        } else {
+        } else if (Array.isArray(objectOrArray)) {
             for (let i = 0; i < objectOrArray.length; i++) {
                 if (typeof objectOrArray[i] === 'string' && regex.test(objectOrArray[i])) {
                     error(`Do not use wild cards in any headers`);
                     return true;
                 }
             }
+        } else if (typeof objectOrArray === 'string' && regex.test(objectOrArray)) {
+            error(`Do not use wild cards in any headers`);
+            return true;
         }
         return false;
     }
