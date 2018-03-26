@@ -8,7 +8,6 @@ const { error } = require('util');
     var vary = require('vary');
 
     var defaults = {
-        origin: '*',
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         preflightContinue: false,
         optionsSuccessStatus: 204
