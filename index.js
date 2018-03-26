@@ -18,14 +18,14 @@ import { error } from 'util';
         let regex = new RegExp('*', 'ig');
         if (typeof objectOrArray === 'object') {
             for (let i in objectOrArray) {
-                if (regex.test(objectOrArray[i])) {
+                if (typeof objectOrArray[i] === 'string' && regex.test(objectOrArray[i])) {
                     error(`Do not use wild cards in any headers`);
                     return true;
                 }
             }
         } else {
             for (let i = 0; i < objectOrArray.length; i++) {
-                if (regex.test(objectOrArray[i])) {
+                if (typeof objectOrArray[i] === 'string' && regex.test(objectOrArray[i])) {
                     error(`Do not use wild cards in any headers`);
                     return true;
                 }
