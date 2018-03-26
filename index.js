@@ -12,7 +12,7 @@ const { error } = require('util');
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         preflightContinue: false,
         optionsSuccessStatus: 204
-        };
+    };
 
     function catchWildCard(objectOrArray) {
         let regex = new RegExp('*', 'ig');
@@ -41,7 +41,7 @@ const { error } = require('util');
     function isOriginAllowed(origin, allowedOrigin) {
         if (Array.isArray(allowedOrigin)) {
             for (var i = 0; i < allowedOrigin.length; ++i) {
-                if (isOriginAllowed(origin, allowedOrigin[i]) && !catchWildCard(allowedOrigin[i])) {
+                if (isOriginAllowed(origin, allowedOrigin[i]) && !catchWildCard(allowedOrigin[i]) && !catchWildCard(origin)) {
                     return true;
                 }
             }
@@ -96,11 +96,11 @@ const { error } = require('util');
     function configureMethods(options) {
         var methods = options.methods;
         if (methods.join) {
-        methods = options.methods.join(','); // .methods is an array, so turn it into a string
+            methods = options.methods.join(','); // .methods is an array, so turn it into a string
         }
         return {
-        key: 'Access-Control-Allow-Methods',
-        value: methods
+            key: 'Access-Control-Allow-Methods',
+            value: methods
         };
     }
 
@@ -119,19 +119,19 @@ const { error } = require('util');
         var headers = [];
 
         if (!allowedHeaders) {
-        allowedHeaders = req.headers['access-control-request-headers']; // .headers wasn't specified, so reflect the request headers
-        headers.push([{
-            key: 'Vary',
-            value: 'Access-Control-Request-Headers'
-        }]);
+            allowedHeaders = req.headers['access-control-request-headers']; // .headers wasn't specified, so reflect the request headers
+            headers.push([{
+                key: 'Vary',
+                value: 'Access-Control-Request-Headers'
+            }]);
         } else if (allowedHeaders.join) {
-        allowedHeaders = allowedHeaders.join(','); // .headers is an array, so turn it into a string
+            allowedHeaders = allowedHeaders.join(','); // .headers is an array, so turn it into a string
         }
         if (allowedHeaders && allowedHeaders.length) {
-        headers.push([{
-            key: 'Access-Control-Allow-Headers',
-            value: allowedHeaders
-        }]);
+            headers.push([{
+                key: 'Access-Control-Allow-Headers',
+                value: allowedHeaders
+            }]);
         }
 
         return headers;
@@ -140,15 +140,15 @@ const { error } = require('util');
     function configureExposedHeaders(options) {
         var headers = options.exposedHeaders;
         if (!headers) {
-        return null;
+            return null;
         } else if (headers.join) {
-        headers = headers.join(','); // .headers is an array, so turn it into a string
+            headers = headers.join(','); // .headers is an array, so turn it into a string
         }
         if (headers && headers.length) {
-        return {
-            key: 'Access-Control-Expose-Headers',
-            value: headers
-        };
+            return {
+                key: 'Access-Control-Expose-Headers',
+                value: headers
+            };
         }
         return null;
     }
@@ -156,26 +156,26 @@ const { error } = require('util');
     function configureMaxAge(options) {
         var maxAge = options.maxAge && options.maxAge.toString();
         if (maxAge && maxAge.length) {
-        return {
-            key: 'Access-Control-Max-Age',
-            value: maxAge
-        };
+            return {
+                key: 'Access-Control-Max-Age',
+                value: maxAge
+            };
         }
         return null;
     }
 
     function applyHeaders(headers, res) {
         for (var i = 0, n = headers.length; i < n; i++) {
-        var header = headers[i];
-        if (header) {
-            if (Array.isArray(header)) {
-            applyHeaders(header, res);
-            } else if (header.key === 'Vary' && header.value) {
-            vary(res, header.value);
-            } else if (header.value) {
-            res.setHeader(header.key, header.value);
+            var header = headers[i];
+            if (header) {
+                if (Array.isArray(header)) {
+                    applyHeaders(header, res);
+                } else if (header.key === 'Vary' && header.value) {
+                    vary(res, header.value);
+                } else if (header.value) {
+                    res.setHeader(header.key, header.value);
+                }
             }
-        }
         }
     }
 
@@ -184,31 +184,31 @@ const { error } = require('util');
         method = req.method && req.method.toUpperCase && req.method.toUpperCase();
 
         if (method === 'OPTIONS') {
-        // preflight
-        headers.push(configureOrigin(options, req));
-        headers.push(configureCredentials(options, req));
-        headers.push(configureMethods(options, req));
-        headers.push(configureAllowedHeaders(options, req));
-        headers.push(configureMaxAge(options, req));
-        headers.push(configureExposedHeaders(options, req));
-        applyHeaders(headers, res);
+            // preflight
+            headers.push(configureOrigin(options, req));
+            headers.push(configureCredentials(options, req));
+            headers.push(configureMethods(options, req));
+            headers.push(configureAllowedHeaders(options, req));
+            headers.push(configureMaxAge(options, req));
+            headers.push(configureExposedHeaders(options, req));
+            applyHeaders(headers, res);
 
-        if (options.preflightContinue ) {
+                if (options.preflightContinue ) {
+                    next();
+                } else {
+                    // Safari (and potentially other browsers) need content-length 0,
+                    //   for 204 or they just hang waiting for a body
+                    res.statusCode = options.optionsSuccessStatus || defaults.optionsSuccessStatus;
+                    res.setHeader('Content-Length', '0');
+                    res.end();
+                }
+        } else {
+            // actual response
+            headers.push(configureOrigin(options, req));
+            headers.push(configureCredentials(options, req));
+            headers.push(configureExposedHeaders(options, req));
+            applyHeaders(headers, res);
             next();
-        } else {
-            // Safari (and potentially other browsers) need content-length 0,
-            //   for 204 or they just hang waiting for a body
-            res.statusCode = options.optionsSuccessStatus || defaults.optionsSuccessStatus;
-            res.setHeader('Content-Length', '0');
-            res.end();
-        }
-        } else {
-        // actual response
-        headers.push(configureOrigin(options, req));
-        headers.push(configureCredentials(options, req));
-        headers.push(configureExposedHeaders(options, req));
-        applyHeaders(headers, res);
-        next();
         }
     }
 
@@ -218,17 +218,17 @@ const { error } = require('util');
         if (typeof o === 'function') {
             optionsCallback = o;
         } else {
-        optionsCallback = function (req, cb) {
-            cb(null, o);
-        };
-    }
+            optionsCallback = function (req, cb) {
+                cb(null, o);
+            };
+        }
 
         return function corsMiddleware(req, res, next) {
             optionsCallback(req, function (err, options) {
                 if (err) {
                     next(err);
                 } else {
-                    if (catchWildCard(options.origin) && catchWildCard(req.headers.origin)) {
+                    if (catchWildCard(options.origin) || catchWildCard(req.headers.origin)) {
                         error(`Don't allow wild cards of any kind in your CORS origins.`);
                     } else {
                         var corsOptions = assign({}, defaults, options);
@@ -243,12 +243,12 @@ const { error } = require('util');
 
                         if (originCallback) {
                             originCallback(req.headers.origin, function (err2, origin) {
-                            if (err2 || !origin) {
-                                next(err2);
-                            } else {
-                                corsOptions.origin = origin;
-                                cors(corsOptions, req, res, next);
-                            }
+                                if (err2 || !origin) {
+                                    next(err2);
+                                } else {
+                                    corsOptions.origin = origin;
+                                    cors(corsOptions, req, res, next);
+                                }
                             });
                         } else {
                             next();
