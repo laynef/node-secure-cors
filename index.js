@@ -228,9 +228,12 @@
                 if (err) {
                     next(err);
                 } else {
-                    if (catchWildCard(options.origin, next) || catchWildCard(req.headers.origin, next)) {
+                    if (catchWildCard(options.origin) || catchWildCard(req.headers.origin)) {
                         console.error(`Don't allow wild cards of any kind in your CORS origins.`);
-                        next(err);
+                        res.status(500).send({
+                            error_message: `Don't allow wild cards of any kind in your CORS origins.`,
+                            error: err,
+                        });
                     } else {
                         var corsOptions = assign({}, defaults, options);
                         var originCallback = null;
