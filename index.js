@@ -43,14 +43,14 @@ const { error } = require('util');
     function isOriginAllowed(origin, allowedOrigin) {
         if (Array.isArray(allowedOrigin)) {
             for (var i = 0; i < allowedOrigin.length; ++i) {
-                if (isOriginAllowed(origin, allowedOrigin[i]) && !catchWildCard(allowedOrigin[i]) && !catchWildCard(origin)) {
+                if (isOriginAllowed(origin, allowedOrigin[i]) && (typeof allowedOrigin[i] === 'string' && !catchWildCard(allowedOrigin[i])) && (typeof origin === 'string' && !catchWildCard(origin))) {
                     return true;
                 }
             }
             return false;
         } else if (isString(allowedOrigin) && !catchWildCard(allowedOrigin)) {
             return origin === allowedOrigin;
-        } else if (allowedOrigin instanceof RegExp && !catchWildCard(allowedOrigin)) {
+        } else if (allowedOrigin instanceof RegExp) {
             return allowedOrigin.test(origin);
         } else {
             if (!catchWildCard(allowedOrigin)) {
