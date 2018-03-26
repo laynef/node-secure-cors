@@ -14,7 +14,7 @@ const { error } = require('util');
     };
 
     function catchWildCard(objectOrArray) {
-        let regex = new RegExp('*', 'ig');
+        let regex = /\*/ig;
         if (typeof objectOrArray === 'object') {
             for (let i in objectOrArray) {
                 if (typeof objectOrArray[i] === 'string' && regex.test(objectOrArray[i])) {
