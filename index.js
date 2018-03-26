@@ -1,5 +1,3 @@
-const { error } = require('util');
-
 (function () {
 
     'use strict';
@@ -18,19 +16,19 @@ const { error } = require('util');
         if (typeof objectOrArray === 'object') {
             for (let i in objectOrArray) {
                 if (typeof objectOrArray[i] === 'string' && regex.test(objectOrArray[i])) {
-                    error(`Do not use wild cards in any headers`);
+                    console.error(`Do not use wild cards in any headers`);
                     return true;
                 }
             }
         } else if (Array.isArray(objectOrArray)) {
             for (let i = 0; i < objectOrArray.length; i++) {
                 if (typeof objectOrArray[i] === 'string' && regex.test(objectOrArray[i])) {
-                    error(`Do not use wild cards in any headers`);
+                    console.error(`Do not use wild cards in any headers`);
                     return true;
                 }
             }
         } else if (typeof objectOrArray === 'string' && regex.test(objectOrArray)) {
-            error(`Do not use wild cards in any headers`);
+            console.error(`Do not use wild cards in any headers`);
             return true;
         }
         return false;
@@ -230,8 +228,9 @@ const { error } = require('util');
                 if (err) {
                     next(err);
                 } else {
-                    if (catchWildCard(options.origin) || catchWildCard(req.headers.origin)) {
-                        error(`Don't allow wild cards of any kind in your CORS origins.`);
+                    if (catchWildCard(options.origin, next) || catchWildCard(req.headers.origin, next)) {
+                        console.error(`Don't allow wild cards of any kind in your CORS origins.`);
+                        next(err);
                     } else {
                         var corsOptions = assign({}, defaults, options);
                         var originCallback = null;
